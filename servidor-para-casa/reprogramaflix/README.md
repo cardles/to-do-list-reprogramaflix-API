@@ -1,5 +1,5 @@
 # {reprograma}flix
-API apresentada ao curso online de back-end da {reprograma}.
+API apresentada ao curso online de back-end da {reprograma}. <br>
 Tema da semana: "Métodos HTTP: PUT + PATCH".
 
 ## documentação
