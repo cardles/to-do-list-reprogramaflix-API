@@ -1,65 +1,166 @@
-const tarefasJson = require("../models/tarefas.json");
-// const fs = require("fs");
+const { request, response } = require("express");
+const tasksJSON = require("../models/tarefas.json");
+const fs = require("fs");
+
+
 
 const getAll = (request, response) => {
-    response.status(200).send(tarefasJson);
+
+    response.status(200).send({
+        "message": "Essas são todas as tarefas disponíveis:",
+        tasksJSON
+    });
 };
 
-const getById = (request, response) => {
-    const idRequirido = request.params.id
-    const tarefaFiltrada = tarefasJson.find(tarefa => tarefa.id == idRequirido)
 
-    response.status(200).send(tarefaFiltrada)
-}
+const getByID = (request, response) => {
 
-const createTask = (request, response) => {
-    const descricaoRequirida = request.body.descricao
-    const nomeColaboradorRequirido = request.body.nomeColaborador
+    const requestedID = request.params.id;
+    const taskFound = tasksJSON.find(tarefa => tarefa.id == requestedID);
 
-    const novaTarefa = {
-        id: Math.random().toString(32).substr(2, 9),
-        dataInclusao: new Date(),
-        concluido: false,
-        descricao: descricaoRequirida,
-        nomeColaborador: nomeColaboradorRequirido
-    }
+    response.status(200).send({
+        "message": `Essa é a tarefa que corresponde ao id ${requestedID}:`,
+        taskFound
+    });
+};
 
-    tarefasJson.push(novaTarefa)
 
-    // fs.writeFile("./src/models/tarefas.json", JSON.stringify(tarefasJson), 'utf8', function(err){
-    //     if(err) {
-    //         return response.status(424).send({message: err})
-    //     }
-    // })
+const deleteByID = (request, response) => {
 
-    response.status(200).send(novaTarefa)
+    const requestedID = request.params.id;
+    const taskFound = tasksJSON.find(tarefa => tarefa.id == requestedID);
+    const index = tasksJSON.indexOf(taskFound);
 
-}
+    if(taskFound) {
+        tasksJSON.splice(index, 1);
 
-const deleteTask = (request, response) => {
-    const idRequirido = request.params.id
-    const tarefaFiltrada = tarefasJson.find(tarefa => tarefa.id == idRequirido)
+        response.status(200).json([{
+            "message": "A tarefa foi deletada com sucesso! Visualize abaixo a lista de tarefas atualizada:",
+            tasksJSON
+        }]);
 
-    const indice = tarefasJson.indexOf(tarefaFiltrada)
-    tarefasJson.splice(indice, 1)
+        fs.writeFile("./src/models/tarefas.json", JSON.stringify(tasksJSON), 'utf8', (err) => {
+            if(err) {
+                return response.status(424).send({"message": err})
+            };
+        });
+    };
+};
 
-    // fs.writeFile("./src/models/tarefas.json", JSON.stringify(tarefasJson), 'utf8', function(err){
-    //     if(err) {
-    //         return response.status(424).send({message: err})
-    //     }
-    // })
 
-    response.status(200).json([{
-        "mensagem": "Tarefa deletada com sucesso",
-        tarefasJson
-    }])
+const postTask = (request, response) => {
 
-}
+    const body = request.body;
 
+    let newTask = {
+        "id": Math.random().toString(32).substr(2, 9),
+        "dataInclusao": new Date(),
+        "concluido": false,
+        "descricao": body.descricao,
+        "nomeColaborador": body.nomeColaborador
+    };
+
+    tasksJSON.push(newTask);
+
+    response.status(201).send({
+        "message": "Nova tarefa adicionada com sucesso! Visualize abaixo a lista de tarefas atualizada:",
+        tasksJSON
+    });
+
+    fs.writeFile("./src/models/tarefas.json", JSON.stringify(tasksJSON), 'utf8', (err) => {
+        if(err) {
+            return response.status(424).send({"message": err})
+        };
+    });
+
+};
+
+
+const putTaskByID = (request, response) => {
+
+    const requestedID = request.params.id;
+    const taskFound = tasksJSON.find(task => task.id == requestedID);
+    const body = request.body;
+
+    let updatedTask = {
+        "id": taskFound.id,
+        "dataInclusao": new Date(),
+        "concluido": body.concluido,
+        "descricao": body.descricao,
+        "nomeColaborador": body.nomeColaborador
+    };
+
+    let index = tasksJSON.indexOf(taskFound);
+
+    tasksJSON.splice(index, 1, body);
+
+    response.status(200).send({
+        "message": "A tarefa foi atualizada com sucesso! Visualize abaixo:",
+        updatedTask
+    });
+
+    fs.writeFile("./src/models/tarefas.json", JSON.stringify(tasksJSON), 'utf8', (err) => {
+        if(err) {
+            return response.status(424).send({"message": err})
+        };
+    });
+};
+
+
+const patchStatusByID = (request, response) => {
+
+    const requestedID = request.params.id;
+    const taskFound = tasksJSON.find(task => task.id == requestedID);
+    let newStatus = request.body.concluido;
+
+    taskFound.concluido = newStatus;
+
+    response.status(200).send({
+        "message": "O status da tarefa foi atualizado com sucesso! Visualize abaixo:",
+        taskFound
+    });
+
+    fs.writeFile("./src/models/tarefas.json", JSON.stringify(tasksJSON), 'utf8', (err) => {
+        if(err) {
+            return response.status(424).send({"message": err})
+        };
+    });
+};
+
+
+const patchAnythingByID = (request, response) => {
+
+    const requestedID = request.params.id;
+    const taskFound = tasksJSON.find(task => task.id == requestedID);
+    const body = request.body;
+
+    let keysFromBody = Object.keys(body);
+
+    keysFromBody.forEach(keyFromBody => {
+        if(taskFound[keyFromBody]) {
+
+            taskFound[keyFromBody] = body[keyFromBody];
+
+            response.status(200).send({
+                "message": "A seção da tarefa foi atualizada com sucesso! Visualize abaixo:",
+                taskFound
+            });
+
+            fs.writeFile("./src/models/tarefas.json", JSON.stringify(tasksJSON), 'utf8', (err) => {
+                if(err) {
+                    return response.status(424).send({"message": err})
+                };
+            });
+        };
+    });
+};
 
 module.exports = {
     getAll,
-    getById,
-    createTask,
-    deleteTask
-}
+    getByID,
+    deleteByID,
+    postTask,
+    putTaskByID,
+    patchStatusByID,
+    patchAnythingByID
+};

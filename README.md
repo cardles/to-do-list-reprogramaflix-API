@@ -1,4 +1,6 @@
-Turma Online 12 | Back-end | 2021 | Métodos: PUT e PATCH
+# {reprograma} week 10: web APIs challenge
+Desafio apresentado ao curso online de back-end da {reprograma}.
+Tema da semana: "Métodos HTTP: PUT + PATCH".
 
-## Para casa
-Complete um crud do reprogramaflix e do to-do-api
+## Instruções para casa
+Complete um crud das web APIs das pastas "reprogramaflix" e "to-do-server", presente em "servidor-para-casa", seguindo as demandas de negócio propostas.

@@ -1,12 +1,14 @@
-const express = require("express")
-const router = express.Router()
-const controller = require("../controllers/toDoController")
+const express = require("express");
+const controller = require("../controllers/toDoController");
 
-router.get("/", controller.getAll)
-router.get("/:id", controller.getById)
+const router = express.Router();
 
-router.post("/cadastrar", controller.createTask)
+router.get("/", controller.getAll);
+router.get("/:id", controller.getByID);
+router.post("/adicionar", controller.postTask);
+router.delete("/apagar/:id", controller.deleteByID);
+router.put("/atualizar/tarefa/:id", controller.putTaskByID);
+router.patch("/atualizar/status/:id", controller.patchStatusByID);
+router.patch("/atualizar/:id", controller.patchAnythingByID);
 
-router.delete("/:id", controller.deleteTask)
-
-module.exports = router
+module.exports = router;
